@@ -1,84 +1,312 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>博客管理后台</title>
+  <title>虎博客 - 高级管理后台</title>
+  <link rel="icon" href="/favicon.ico" />
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #01C4B6;
+      --primary-dark: #00a89b;
+      --secondary: #34495e;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --radius: 8px;
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
 
-<style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    * {
       margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .loading {
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: var(--gray-800);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .admin-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+
+    .admin-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .admin-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
       text-align: center;
-      padding: 50px;
-      color: #666;
     }
-    .error {
-      background: #fee;
-      border: 1px solid #fcc;
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 4px;
-      color: #c33;
+
+    .admin-card-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .admin-card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-card-header p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+    }
+
+    .loading-spinner {
+      border: 4px solid var(--gray-200);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 2rem auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background: var(--danger);
+      color: white;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .error-message ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 0.5rem;
+      text-align: left;
+    }
+
+    .error-message li {
+      margin-bottom: 0.3rem;
+    }
+
+    .error-message li:last-child {
+      margin-bottom: 0;
+    }
+
+    #decap-cms {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
   </style>
 </head>
 <body>
-  <div id="cms-loading" class="loading">
-    <h2>正在加载管理后台...</h2>
-    <p>如果页面长时间空白，请检查 Netlify Identity 是否已启用</p>
-  </div>
-  
-  <div id="cms-error" class="error" style="display: none;">
-    <h3>加载失败</h3>
-    <p>请确保：</p>
-    <ul>
-      <li>Netlify Identity 已启用</li>
-      <li>Git Gateway 已启用</li>
-      <li>浏览器没有阻止脚本加载</li>
-    </ul>
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="admin-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather">
+          <path d="M20.24 12.24l-7.07 7.07a4.5 4.5 0 0 1-6.36 0L4 16V4l9.93 9.93a4.5 4.5 0 0 1 0 6.36z"></path>
+        </svg>
+        <span>虎博客管理</span>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div id="cms-status-card" class="admin-card">
+        <div class="admin-card-header">
+          <h1>加载管理后台</h1>
+          <p>请稍候，我们正在准备您的内容管理系统。</p>
+        </div>
+        <div id="loading-indicator">
+          <div class="loading-spinner"></div>
+          <p style="color: var(--gray-600); font-size: 0.9rem;">如果长时间未加载，请检查网络连接或 Netlify Identity 设置。</p>
+        </div>
+        <div id="error-indicator" class="error-message" style="display: none;">
+          <h3>加载失败！</h3>
+          <p>请检查以下问题：</p>
+          <ul>
+            <li>确保 Netlify Identity 已在 Netlify 后台启用。</li>
+            <li>确保 Git Gateway 已在 Netlify 后台启用。</li>
+            <li>检查浏览器控制台是否有错误信息。</li>
+          </ul>
+        </div>
+      </div>
+      <div id="decap-cms" style="display: none;"></div>
+    </main>
   </div>
 
   <script>
-    // 检查 Netlify Identity 是否可用
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorIndicator = document.getElementById('error-indicator');
+    const cmsStatusCard = document.getElementById('cms-status-card');
+    const decapCmsContainer = document.getElementById('decap-cms');
+
+    function showLoading() {
+      loadingIndicator.style.display = 'block';
+      errorIndicator.style.display = 'none';
+      cmsStatusCard.style.display = 'block';
+      decapCmsContainer.style.display = 'none';
+    }
+
+    function showError() {
+      loadingIndicator.style.display = 'none';
+      errorIndicator.style.display = 'block';
+      cmsStatusCard.style.display = 'block';
+      decapCmsContainer.style.display = 'none';
+    }
+
+    function showCms() {
+      cmsStatusCard.style.display = 'none';
+      decapCmsContainer.style.display = 'flex'; // Use flex to allow CMS to take full height
+    }
+
+    // Initialize Netlify Identity
     if (typeof netlifyIdentity !== 'undefined') {
       netlifyIdentity.on('init', user => {
         console.log('Netlify Identity initialized', user);
-        document.getElementById('cms-loading').style.display = 'none';
+        if (user) {
+          console.log('User already logged in:', user);
+          // If user is already logged in, try to load CMS directly
+          loadDecapCMS();
+        } else {
+          // If no user, show loading and wait for login
+          showLoading();
+        }
       });
-      
+
       netlifyIdentity.on('login', user => {
-        console.log('User logged in', user);
+        console.log('User logged in:', user);
+        loadDecapCMS();
       });
-      
+
       netlifyIdentity.on('logout', () => {
         console.log('User logged out');
+        // Redirect or show login screen
+        netlifyIdentity.open();
       });
-    } else {
-      console.error('Netlify Identity not loaded');
-      document.getElementById('cms-loading').style.display = 'none';
-      document.getElementById('cms-error').style.display = 'block';
-    }
-  </script>
-  
-  <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
-  
-  <script>
-    // 检查 CMS 是否加载成功
-    setTimeout(() => {
-      if (typeof DecapCMS !== 'undefined') {
-        console.log('Decap CMS loaded successfully');
-      } else {
-        console.error('Decap CMS failed to load');
-        document.getElementById('cms-loading').style.display = 'none';
-        document.getElementById('cms-error').style.display = 'block';
+
+      // Open login dialog if not logged in
+      if (!netlifyIdentity.currentUser()) {
+        netlifyIdentity.open();
       }
-    }, 3000);
+
+    } else {
+      console.error('Netlify Identity script not loaded.');
+      showError();
+    }
+
+    // Function to load Decap CMS
+    function loadDecapCMS() {
+      showLoading(); // Show loading while CMS is being loaded
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js';
+      script.onload = () => {
+        if (typeof DecapCMS !== 'undefined') {
+          console.log('Decap CMS script loaded successfully.');
+          // Initialize CMS
+          DecapCMS.init({
+            config: {
+              backend: {
+                name: 'git-gateway',
+                branch: 'main', // Make sure this is your main branch
+              },
+              media_folder: 'public/assets/uploads', // Folder where uploaded files will be stored
+              public_folder: '/assets/uploads', // The folder where the files are served from
+              collections: [
+                {
+                  name: 'blog',
+                  label: '博客文章',
+                  folder: 'src/content/blog',
+                  create: true,
+                  slug: '{{year}}-{{month}}-{{day}}-{{slug}}',
+                  fields: [
+                    { label: '标题', name: 'title', widget: 'string' },
+                    { label: '发布日期', name: 'publishDate', widget: 'datetime' },
+                    { label: '作者', name: 'author', widget: 'string', default: '虎' },
+                    { label: '标签', name: 'tags', widget: 'list', default: ['未分类'] },
+                    { label: '封面图片', name: 'cover', widget: 'image', required: false },
+                    { label: '摘要', name: 'description', widget: 'text', required: false },
+                    { label: '正文', name: 'body', widget: 'markdown' },
+                  ],
+                },
+                // You can add more collections here for other content types
+              ],
+            },
+          });
+          console.log('Decap CMS initialized.');
+          // Hide loading and show CMS after a small delay to ensure rendering
+          setTimeout(() => {
+            showCms();
+          }, 500); // Give CMS a moment to render
+        } else {
+          console.error('Decap CMS object not found after script load.');
+          showError();
+        }
+      };
+      script.onerror = () => {
+        console.error('Failed to load Decap CMS script.');
+        showError();
+      };
+      document.head.appendChild(script);
+    }
+
+    // Initial check for Decap CMS, if it's already loaded (e.g., on refresh)
+    if (typeof DecapCMS !== 'undefined') {
+      console.log('Decap CMS already present, re-initializing.');
+      loadDecapCMS();
+    }
   </script>
 </body>
 </html>
