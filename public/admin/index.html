@@ -5,8 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>博客管理后台</title>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    .error {
+      background: #fee;
+      border: 1px solid #fcc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+      color: #c33;
+    }
+  </style>
 </head>
 <body>
+  <div id="cms-loading" class="loading">
+    <h2>正在加载管理后台...</h2>
+    <p>如果页面长时间空白，请检查 Netlify Identity 是否已启用</p>
+  </div>
+  
+  <div id="cms-error" class="error" style="display: none;">
+    <h3>加载失败</h3>
+    <p>请确保：</p>
+    <ul>
+      <li>Netlify Identity 已启用</li>
+      <li>Git Gateway 已启用</li>
+      <li>浏览器没有阻止脚本加载</li>
+    </ul>
+  </div>
+
+  <script>
+    // 检查 Netlify Identity 是否可用
+    if (typeof netlifyIdentity !== 'undefined') {
+      netlifyIdentity.on('init', user => {
+        console.log('Netlify Identity initialized', user);
+        document.getElementById('cms-loading').style.display = 'none';
+      });
+      
+      netlifyIdentity.on('login', user => {
+        console.log('User logged in', user);
+      });
+      
+      netlifyIdentity.on('logout', () => {
+        console.log('User logged out');
+      });
+    } else {
+      console.error('Netlify Identity not loaded');
+      document.getElementById('cms-loading').style.display = 'none';
+      document.getElementById('cms-error').style.display = 'block';
+    }
+  </script>
+  
   <script src="https://unpkg.com/netlify-cms@^3.0.0/dist/netlify-cms.js"></script>
+  
+  <script>
+    // 检查 CMS 是否加载成功
+    setTimeout(() => {
+      if (typeof CMS !== 'undefined') {
+        console.log('Netlify CMS loaded successfully');
+      } else {
+        console.error('Netlify CMS failed to load');
+        document.getElementById('cms-loading').style.display = 'none';
+        document.getElementById('cms-error').style.display = 'block';
+      }
+    }, 3000);
+  </script>
 </body>
 </html>
