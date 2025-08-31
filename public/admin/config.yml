@@ -1,0 +1,42 @@
+backend:
+  name: git-gateway
+  branch: main
+
+local_backend: true
+
+media_folder: "public/assets/images/uploads"
+public_folder: "/assets/images/uploads"
+
+collections:
+  - name: "blog"
+    label: "博客文章"
+    folder: "src/content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "分类", name: "categories", widget: "string"}
+      - {label: "标签", name: "tags", widget: "list", field: {label: "标签", name: "tag", widget: "string"}}
+      - {label: "文章ID", name: "id", widget: "string"}
+      - {label: "创建日期", name: "date", widget: "datetime"}
+      - {label: "更新日期", name: "updated", widget: "datetime", required: false}
+      - {label: "封面图", name: "cover", widget: "string", required: false}
+      - {label: "是否推荐", name: "recommend", widget: "boolean", default: false}
+      - {label: "是否置顶", name: "top", widget: "boolean", default: false}
+      - {label: "是否隐藏", name: "hide", widget: "boolean", default: false}
+      - {label: "内容", name: "body", widget: "markdown"}
+
+  - name: "config"
+    label: "网站配置"
+    files:
+      - file: "src/config.ts"
+        label: "网站设置"
+        name: "config"
+        fields:
+          - {label: "网站标题", name: "Title", widget: "string"}
+          - {label: "网站地址", name: "Site", widget: "string"}
+          - {label: "副标题", name: "Subtitle", widget: "string"}
+          - {label: "网站描述", name: "Description", widget: "text"}
+          - {label: "作者", name: "Author", widget: "string"}
+          - {label: "作者头像", name: "Avatar", widget: "string"}
+          - {label: "座右铭", name: "Motto", widget: "string"}
