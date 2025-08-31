@@ -59,6 +59,7 @@ export default {
     { text: '留言', link: '/message', icon: 'Nav_message' },
     { text: '关于', link: '/about', icon: 'Nav_about' },
     { text: 'API', link: 'https://api.vvhan.com/', target: true, icon: 'Nav_link' },
+    { text: '后台', link: '/admin/', icon: 'Nav_admin' },
   ],
   // 侧边栏个人网站
   WebSites: [

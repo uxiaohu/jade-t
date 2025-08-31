@@ -1,0 +1,22 @@
+---
+---
+<script>
+  // 为Netlify Identity添加类型声明
+  declare global {
+    interface Window {
+      netlifyIdentity: {
+        on: (event: string, callback: any) => void;
+      };
+    }
+  }
+
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => {
+          document.location.href = "/admin/";
+        });
+      }
+    });
+  }
+</script>
