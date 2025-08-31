@@ -71,10 +71,10 @@
   <script>
     // 检查 CMS 是否加载成功
     setTimeout(() => {
-      if (typeof CMS !== 'undefined') {
-        console.log('Netlify CMS loaded successfully');
+      if (typeof DecapCMS !== 'undefined') {
+        console.log('Decap CMS loaded successfully');
       } else {
-        console.error('Netlify CMS failed to load');
+        console.error('Decap CMS failed to load');
         document.getElementById('cms-loading').style.display = 'none';
         document.getElementById('cms-error').style.display = 'block';
       }
