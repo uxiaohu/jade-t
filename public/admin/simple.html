@@ -25,6 +25,14 @@
       border-radius: 4px;
       color: #c33;
     }
+    .success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+      color: #155724;
+    }
   </style>
 </head>
 <body>
@@ -35,25 +43,27 @@
   
   <div id="cms-error" class="error" style="display: none;">
     <h3>加载失败</h3>
-    <p>请检查：</p>
-    <ul>
-      <li>Netlify Identity 是否已启用</li>
-      <li>Git Gateway 是否已启用</li>
-      <li>用户是否已登录</li>
-    </ul>
+    <div id="error-details"></div>
+  </div>
+
+  <div id="cms-success" class="success" style="display: none;">
+    <h3>✅ CMS 加载成功</h3>
+    <p>Netlify CMS 已准备就绪</p>
   </div>
 
   <script>
     // 检查 Netlify Identity 是否可用
     if (typeof netlifyIdentity !== 'undefined') {
+      console.log('Netlify Identity 脚本已加载');
+      
       netlifyIdentity.on('init', user => {
         console.log('Netlify Identity initialized', user);
         if (user) {
+          console.log('用户已登录:', user.email);
           document.getElementById('cms-loading').style.display = 'none';
         } else {
-          document.getElementById('cms-loading').style.display = 'none';
-          document.getElementById('cms-error').style.display = 'block';
-          document.getElementById('cms-error').innerHTML += '<p><strong>用户未登录，请先登录</strong></p>';
+          console.log('用户未登录，这是正常的');
+          // 用户未登录是正常的，继续加载 CMS
         }
       });
       
@@ -66,30 +76,69 @@
         console.log('User logged out');
         document.getElementById('cms-loading').style.display = 'none';
         document.getElementById('cms-error').style.display = 'block';
+        document.getElementById('error-details').innerHTML = '<p>用户已登出，请重新登录</p>';
       });
     } else {
-      console.error('Netlify Identity not loaded');
+      console.error('Netlify Identity 脚本未加载');
       document.getElementById('cms-loading').style.display = 'none';
       document.getElementById('cms-error').style.display = 'block';
+      document.getElementById('error-details').innerHTML = '<p>Netlify Identity 脚本加载失败</p>';
     }
   </script>
   
-  <script src="https://unpkg.com/netlify-cms@^3.0.0/dist/netlify-cms.js"></script>
+  <!-- 加载 Netlify CMS -->
+  <script src="https://unpkg.com/netlify-cms@^3.0.0/dist/netlify-cms.js" 
+          onload="console.log('Netlify CMS 脚本加载成功')"
+          onerror="console.error('Netlify CMS 脚本加载失败')">
+  </script>
   
   <script>
-    // 使用简化配置
-    CMS.registerPreviewStyle('/assets/css/main.css');
-    
-    // 检查 CMS 是否加载成功
-    setTimeout(() => {
+    // 等待 CMS 加载完成
+    function waitForCMS() {
       if (typeof CMS !== 'undefined') {
-        console.log('Netlify CMS loaded successfully');
+        console.log('Netlify CMS 已加载并可用');
+        document.getElementById('cms-loading').style.display = 'none';
+        document.getElementById('cms-success').style.display = 'block';
+        
+        // 配置 CMS
+        try {
+          CMS.registerPreviewStyle('/assets/css/main.css');
+          console.log('CMS 配置完成');
+        } catch (error) {
+          console.warn('CMS 配置警告:', error);
+        }
       } else {
-        console.error('Netlify CMS failed to load');
+        console.log('等待 CMS 加载...');
+        setTimeout(waitForCMS, 500);
+      }
+    }
+    
+    // 开始检查 CMS
+    setTimeout(waitForCMS, 1000);
+    
+    // 超时检查
+    setTimeout(() => {
+      if (typeof CMS === 'undefined') {
+        console.error('CMS 加载超时');
         document.getElementById('cms-loading').style.display = 'none';
         document.getElementById('cms-error').style.display = 'block';
+        document.getElementById('error-details').innerHTML = `
+          <p><strong>CMS 加载失败</strong></p>
+          <p>可能的原因：</p>
+          <ul>
+            <li>网络连接问题</li>
+            <li>CDN 访问受限</li>
+            <li>浏览器阻止了脚本加载</li>
+          </ul>
+          <p>请尝试：</p>
+          <ul>
+            <li>刷新页面</li>
+            <li>检查网络连接</li>
+            <li>使用不同的浏览器</li>
+          </ul>
+        `;
       }
-    }, 3000);
+    }, 10000); // 10秒超时
   </script>
 </body>
 </html>
