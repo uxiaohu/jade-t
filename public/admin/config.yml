@@ -40,3 +40,32 @@ collections:
           - {label: "作者", name: "Author", widget: "string"}
           - {label: "作者头像", name: "Avatar", widget: "string"}
           - {label: "座右铭", name: "Motto", widget: "string"}
+
+  - name: "links"
+    label: "友情链接"
+    files:
+      - file: "src/page_data/Link.ts"
+        label: "友情链接配置"
+        name: "links"
+        fields:
+          - {label: "API 接口", name: "api", widget: "string", required: false}
+          - {label: "链接数据", name: "data", widget: "list", fields: [
+              {label: "名称", name: "name", widget: "string"},
+              {label: "链接", name: "link", widget: "string"},
+              {label: "头像", name: "avatar", widget: "string"},
+              {label: "描述", name: "descr", widget: "string"}
+            ]}
+
+  - name: "talking"
+    label: "动态说说"
+    files:
+      - file: "src/page_data/Talking.ts"
+        label: "动态配置"
+        name: "talking"
+        fields:
+          - {label: "API 接口", name: "api", widget: "string", required: false}
+          - {label: "动态数据", name: "data", widget: "list", fields: [
+              {label: "日期", name: "date", widget: "datetime"},
+              {label: "标签", name: "tags", widget: "list", field: {label: "标签", name: "tag", widget: "string"}},
+              {label: "内容", name: "content", widget: "text"}
+            ]}
