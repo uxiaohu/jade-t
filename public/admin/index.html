@@ -12,10 +12,12 @@
     :root {
       --primary: #01C4B6;
       --primary-dark: #00a89b;
+      --primary-light: #e6f7f6;
       --secondary: #34495e;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
+      --gray-50: #f9fafb;
       --gray-100: #f3f4f6;
       --gray-200: #e5e7eb;
       --gray-300: #d1d5db;
@@ -24,9 +26,13 @@
       --gray-600: #4b5563;
       --gray-700: #374151;
       --gray-800: #1f2937;
-      --radius: 8px;
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --gray-900: #111827;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     * {
@@ -41,12 +47,13 @@
       color: var(--gray-800);
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .admin-container {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
     }
 
     .admin-header {
@@ -57,6 +64,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .admin-logo {
@@ -68,9 +78,18 @@
       color: var(--primary);
     }
 
+    .admin-logo svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--primary);
+      stroke-width: 2;
+      fill: none;
+    }
+
     .admin-main {
       flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem;
@@ -79,37 +98,39 @@
     .admin-card {
       background: white;
       border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      padding: 2rem;
+      box-shadow: var(--shadow-lg);
+      padding: 2.5rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       text-align: center;
+      transition: all 0.3s ease;
     }
 
     .admin-card-header {
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .admin-card-header h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.8rem;
+      font-weight: 700;
       color: var(--gray-800);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .admin-card-header p {
       color: var(--gray-500);
-      font-size: 0.9rem;
+      font-size: 1rem;
+      line-height: 1.5;
     }
 
     .loading-spinner {
       border: 4px solid var(--gray-200);
       border-top: 4px solid var(--primary);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       animation: spin 1s linear infinite;
-      margin: 2rem auto;
+      margin: 2.5rem auto;
     }
 
     @keyframes spin {
@@ -120,26 +141,44 @@
     .error-message {
       background: var(--danger);
       color: white;
-      padding: 1rem;
+      padding: 1.5rem;
       border-radius: var(--radius);
-      margin-top: 1.5rem;
+      margin-top: 2rem;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    .error-message h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
     }
 
     .error-message ul {
       list-style: none;
       padding: 0;
       margin-top: 0.5rem;
-      text-align: left;
     }
 
     .error-message li {
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
     }
 
     .error-message li:last-child {
       margin-bottom: 0;
+    }
+
+    .error-message li svg {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      stroke: white;
+      stroke-width: 2;
     }
 
     #decap-cms {
@@ -155,7 +194,7 @@
   <div class="admin-container">
     <header class="admin-header">
       <div class="admin-logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather">
+        <svg viewBox="0 0 24 24">
           <path d="M20.24 12.24l-7.07 7.07a4.5 4.5 0 0 1-6.36 0L4 16V4l9.93 9.93a4.5 4.5 0 0 1 0 6.36z"></path>
         </svg>
         <span>虎博客管理</span>
@@ -170,15 +209,39 @@
         </div>
         <div id="loading-indicator">
           <div class="loading-spinner"></div>
-          <p style="color: var(--gray-600); font-size: 0.9rem;">如果长时间未加载，请检查网络连接或 Netlify Identity 设置。</p>
+          <p style="color: var(--gray-600); font-size: 0.9rem; margin-top: 1rem;">如果长时间未加载，请检查网络连接或 Netlify Identity 设置。</p>
         </div>
         <div id="error-indicator" class="error-message" style="display: none;">
           <h3>加载失败！</h3>
           <p>请检查以下问题：</p>
           <ul>
-            <li>确保 Netlify Identity 已在 Netlify 后台启用。</li>
-            <li>确保 Git Gateway 已在 Netlify 后台启用。</li>
-            <li>检查浏览器控制台是否有错误信息。</li>
+            <li>
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16" />
+              </svg>
+              确保 Netlify Identity 已在 Netlify 后台启用。
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16" />
+              </svg>
+              确保 Git Gateway 已在 Netlify 后台启用。
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16" />
+              </svg>
+              检查浏览器控制台是否有错误信息。
+            </li>
           </ul>
         </div>
       </div>
@@ -217,8 +280,8 @@
         console.log('Netlify Identity initialized', user);
         if (user) {
           console.log('User already logged in:', user);
-          // If user is already logged in, try to load CMS directly
-          loadDecapCMS();
+          // If user is already logged in, show CMS container directly
+          showCms();
         } else {
           // If no user, show loading and wait for login
           showLoading();
@@ -227,13 +290,14 @@
 
       netlifyIdentity.on('login', user => {
         console.log('User logged in:', user);
-        loadDecapCMS();
+        showCms(); // Once logged in, show the CMS
       });
 
       netlifyIdentity.on('logout', () => {
         console.log('User logged out');
         // Redirect or show login screen
         netlifyIdentity.open();
+        showLoading(); // Show loading state again
       });
 
       // Open login dialog if not logged in
@@ -245,68 +309,8 @@
       console.error('Netlify Identity script not loaded.');
       showError();
     }
-
-    // Function to load Decap CMS
-    function loadDecapCMS() {
-      showLoading(); // Show loading while CMS is being loaded
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js';
-      script.onload = () => {
-        if (typeof DecapCMS !== 'undefined') {
-          console.log('Decap CMS script loaded successfully.');
-          // Initialize CMS
-          DecapCMS.init({
-            config: {
-              backend: {
-                name: 'git-gateway',
-                branch: 'main', // Make sure this is your main branch
-              },
-              media_folder: 'public/assets/uploads', // Folder where uploaded files will be stored
-              public_folder: '/assets/uploads', // The folder where the files are served from
-              collections: [
-                {
-                  name: 'blog',
-                  label: '博客文章',
-                  folder: 'src/content/blog',
-                  create: true,
-                  slug: '{{year}}-{{month}}-{{day}}-{{slug}}',
-                  fields: [
-                    { label: '标题', name: 'title', widget: 'string' },
-                    { label: '发布日期', name: 'publishDate', widget: 'datetime' },
-                    { label: '作者', name: 'author', widget: 'string', default: '虎' },
-                    { label: '标签', name: 'tags', widget: 'list', default: ['未分类'] },
-                    { label: '封面图片', name: 'cover', widget: 'image', required: false },
-                    { label: '摘要', name: 'description', widget: 'text', required: false },
-                    { label: '正文', name: 'body', widget: 'markdown' },
-                  ],
-                },
-                // You can add more collections here for other content types
-              ],
-            },
-          });
-          console.log('Decap CMS initialized.');
-          // Hide loading and show CMS after a small delay to ensure rendering
-          setTimeout(() => {
-            showCms();
-          }, 500); // Give CMS a moment to render
-        } else {
-          console.error('Decap CMS object not found after script load.');
-          showError();
-        }
-      };
-      script.onerror = () => {
-        console.error('Failed to load Decap CMS script.');
-        showError();
-      };
-      document.head.appendChild(script);
-    }
-
-    // Initial check for Decap CMS, if it's already loaded (e.g., on refresh)
-    if (typeof DecapCMS !== 'undefined') {
-      console.log('Decap CMS already present, re-initializing.');
-      loadDecapCMS();
-    }
   </script>
+  <!-- Decap CMS script should be loaded after Netlify Identity -->
+  <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
 </body>
 </html>
