@@ -40,6 +40,53 @@ collections:
           - {label: "作者", name: "Author", widget: "string"}
           - {label: "作者头像", name: "Avatar", widget: "string"}
           - {label: "座右铭", name: "Motto", widget: "string"}
+          - {label: "网站缩略图", name: "Cover", widget: "string"}
+          - {label: "侧边栏公告", name: "Tips", widget: "text", required: false}
+          - {label: "打字机文案", name: "TypeWriteList", widget: "list", field: {label: "文案", name: "text", widget: "string"}}
+          - {label: "网站创建时间", name: "CreateTime", widget: "string"}
+          - {label: "页面阻尼滚动速度", name: "ScrollSpeed", widget: "number"}
+          - {label: "博客音乐组件解析接口", name: "vhMusicApi", widget: "string"}
+          - label: "Banner配置"
+            name: "HomeBanner"
+            widget: "object"
+            fields:
+              - {label: "启用Banner", name: "enable", widget: "boolean"}
+              - {label: "首页高度", name: "HomeHeight", widget: "string"}
+              - {label: "其他页面高度", name: "PageHeight", widget: "string"}
+              - {label: "背景", name: "background", widget: "string"}
+          - label: "主题颜色"
+            name: "Theme"
+            widget: "object"
+            fields:
+              - {label: "主题颜色", name: "--vh-main-color", widget: "string"}
+              - {label: "字体颜色", name: "--vh-font-color", widget: "string"}
+              - {label: "侧边栏宽度", name: "--vh-aside-width", widget: "string"}
+              - {label: "全局圆角", name: "--vh-main-radius", widget: "string"}
+              - {label: "主体内容宽度", name: "--vh-main-max-width", widget: "string"}
+          - label: "导航栏配置"
+            name: "Navs"
+            widget: "list"
+            fields:
+              - {label: "文本", name: "text", widget: "string"}
+              - {label: "链接", name: "link", widget: "string"}
+              - {label: "图标", name: "icon", widget: "string"}
+              - {label: "新窗口打开", name: "target", widget: "boolean", required: false}
+          - label: "侧边栏网站"
+            name: "WebSites"
+            widget: "list"
+            fields:
+              - {label: "文本", name: "text", widget: "string"}
+              - {label: "链接", name: "link", widget: "string"}
+              - {label: "图标", name: "icon", widget: "string"}
+          - label: "侧边栏展示"
+            name: "AsideShow"
+            widget: "object"
+            fields:
+              - {label: "展示个人网站", name: "WebSitesShow", widget: "boolean"}
+              - {label: "展示分类", name: "CategoriesShow", widget: "boolean"}
+              - {label: "展示标签", name: "TagsShow", widget: "boolean"}
+              - {label: "展示推荐文章", name: "recommendArticleShow", widget: "boolean"}
+          - {label: "DNS预解析地址", name: "DNSOptimization", widget: "list", field: {label: "地址", name: "url", widget: "string"}}
 
   - name: "links"
     label: "友情链接"
