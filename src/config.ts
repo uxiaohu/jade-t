@@ -10,7 +10,7 @@ export default {
   // 网站作者
   Author: '虎',
   // 作者头像
-  Avatar: 'https://q1.qlogo.cn/g?b=qq&nk=1655466387&s=640',
+  Avatar: '/assets/images/logowu.png',
   // 网站座右铭
   Motto: '热爱技术，热爱生活。',
   // Cover 网站缩略图
@@ -33,7 +33,7 @@ export default {
     // 其他页面高度
     PageHeight: '28.88rem',
     // 背景
-    background: "url('/assets/images/home-banner.webp') no-repeat center 60%/cover",
+    background: "url('https://21st.dev/serafim/splite/default') no-repeat center 60%/cover",
   },
   // 博客主题配置
   Theme: {
