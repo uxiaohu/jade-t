@@ -429,26 +429,73 @@
 
     /* 错误提示 */
     .error-message {
-      background: var(--danger);
-      color: white;
-      padding: 1rem;
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 0.75rem;
       border-radius: var(--radius);
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      position: relative;
     }
 
     /* 成功提示 */
     .success-message {
-      background: var(--success);
-      color: white;
-      padding: 1rem;
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid var(--success);
+      padding: 0.75rem;
       border-radius: var(--radius);
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      position: relative;
+    }
+
+    /* 警告提示 */
+    .warning-message {
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    /* 信息提示 */
+    .info-message {
+      background: var(--info-light);
+      color: var(--info);
+      border: 1px solid var(--info);
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .message-close {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0.25rem;
+      margin-left: auto;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .message-close:hover {
+      opacity: 1;
     }
 
     /* 模态框 */
@@ -515,7 +562,7 @@
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <i class="fas fa-tiger"></i>
-          <span>虎博客管理</span>
+        <span>虎博客管理</span>
         </div>
       </div>
       
@@ -565,6 +612,13 @@
       <header class="top-bar">
         <div class="page-title" id="page-title">仪表板</div>
         <div class="user-menu">
+          <span id="login-status" style="display: none; color: var(--success); margin-right: 1rem;">
+            <i class="fas fa-check-circle"></i> 登录成功
+          </span>
+          <span id="last-refresh-time" style="color: var(--gray-500); font-size: 0.875rem; margin-right: 1rem;"></span>
+          <button class="btn btn-secondary" onclick="loadDashboardData()" title="刷新数据">
+            <i class="fas fa-sync-alt"></i>
+          </button>
           <div class="user-avatar" id="user-avatar">虎</div>
           <button class="btn btn-secondary" onclick="logout()">
             <i class="fas fa-sign-out-alt"></i>
@@ -580,6 +634,11 @@
 
         <!-- 仪表板 -->
         <section id="dashboard-section" class="section active">
+          <!-- 加载状态指示器 -->
+          <div id="dashboard-loading" style="display: none; text-align: center; padding: 2rem; color: var(--gray-500);">
+            <div class="loading-spinner" style="margin-bottom: 1rem;"></div>
+            <p>正在加载数据...</p>
+          </div>
           <div class="dashboard-grid">
             <div class="stat-card">
               <div class="stat-header">
@@ -662,14 +721,14 @@
                 <tbody>
                   <tr>
                     <td colspan="5" style="text-align: center; padding: 2rem;">
-                      <div class="loading-spinner"></div>
+          <div class="loading-spinner"></div>
                       <p style="margin-top: 1rem; color: var(--gray-500);">加载中...</p>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
+        </div>
         </section>
 
         <!-- CMS 容器 -->
@@ -707,46 +766,53 @@
     let currentSection = 'dashboard';
     let cmsInitialized = false;
     let deleteTarget = null;
+    let refreshInterval = null;
+    let lastRefreshTime = null;
 
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
       initializeAdmin();
     });
 
+    // 页面卸载时清理
+    window.addEventListener('beforeunload', function() {
+      stopAutoRefresh();
+    });
+
     // 初始化管理后台
     function initializeAdmin() {
-      if (typeof netlifyIdentity !== 'undefined') {
-        netlifyIdentity.on('init', user => {
-          console.log('Netlify Identity initialized', user);
-          if (user) {
+    if (typeof netlifyIdentity !== 'undefined') {
+      netlifyIdentity.on('init', user => {
+        console.log('Netlify Identity initialized', user);
+        if (user) {
             currentUser = user;
             showLoginStatus();
             updateUserAvatar();
             loadDashboardData();
-          } else {
+        } else {
             netlifyIdentity.open();
-          }
-        });
+        }
+      });
 
-        netlifyIdentity.on('login', user => {
-          console.log('User logged in:', user);
+      netlifyIdentity.on('login', user => {
+        console.log('User logged in:', user);
           currentUser = user;
           showLoginStatus();
           updateUserAvatar();
           loadDashboardData();
-        });
+      });
 
-        netlifyIdentity.on('logout', () => {
-          console.log('User logged out');
+      netlifyIdentity.on('logout', () => {
+        console.log('User logged out');
           currentUser = null;
-          netlifyIdentity.open();
-        });
+        netlifyIdentity.open();
+      });
 
-        if (!netlifyIdentity.currentUser()) {
-          netlifyIdentity.open();
-        }
-      } else {
-        console.error('Netlify Identity script not loaded.');
+      if (!netlifyIdentity.currentUser()) {
+        netlifyIdentity.open();
+      }
+    } else {
+      console.error('Netlify Identity script not loaded.');
         showError('Netlify Identity 脚本未加载');
       }
     }
@@ -773,6 +839,9 @@
     // 加载仪表板数据
     async function loadDashboardData() {
       try {
+        // 显示加载状态
+        showDashboardLoading(true);
+        
         // 加载统计数据
         const stats = await loadStats();
         document.getElementById('total-posts').textContent = stats.totalPosts || '0';
@@ -782,28 +851,85 @@
         
         // 加载最近文章
         await loadRecentPosts();
+        
+        // 更新最后刷新时间
+        lastRefreshTime = new Date();
+        updateLastRefreshTime();
+        
+        // 隐藏加载状态
+        showDashboardLoading(false);
       } catch (error) {
         console.error('加载仪表板数据失败:', error);
         showMessage('加载数据失败，请刷新页面重试', 'error');
+        showDashboardLoading(false);
+      }
+    }
+
+    // 显示/隐藏仪表板加载状态
+    function showDashboardLoading(show) {
+      const loadingElement = document.getElementById('dashboard-loading');
+      if (loadingElement) {
+        loadingElement.style.display = show ? 'block' : 'none';
+      }
+    }
+
+    // 更新最后刷新时间
+    function updateLastRefreshTime() {
+      const refreshTimeElement = document.getElementById('last-refresh-time');
+      if (refreshTimeElement && lastRefreshTime) {
+        refreshTimeElement.textContent = `最后更新: ${lastRefreshTime.toLocaleTimeString('zh-CN')}`;
+      }
+    }
+
+    // 开始自动刷新
+    function startAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+      refreshInterval = setInterval(() => {
+        if (currentSection === 'dashboard') {
+          loadDashboardData();
+        }
+      }, 30000); // 每30秒刷新一次
+    }
+
+    // 停止自动刷新
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
       }
     }
 
     // 加载统计数据
     async function loadStats() {
       try {
-        const response = await fetch('/api/stats');
+        const response = await fetch('/api/stats', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log('统计数据加载成功:', data);
+        return data;
       } catch (error) {
         console.error('加载统计数据失败:', error);
+        showMessage('统计数据加载失败，使用缓存数据', 'warning');
+        
         // 如果API调用失败，返回模拟数据
         return {
           totalPosts: 3,
           totalViews: 1234,
           totalComments: 56,
-          totalFriends: 2
+          totalFriends: 2,
+          lastUpdated: new Date().toISOString()
         };
       }
     }
@@ -853,16 +979,43 @@
     function showMessage(message, type = 'success') {
       const container = document.getElementById('message-container');
       const messageDiv = document.createElement('div');
-      messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+      
+      // 根据类型设置样式
+      let icon, className;
+      switch (type) {
+        case 'error':
+          icon = 'exclamation-triangle';
+          className = 'error-message';
+          break;
+        case 'warning':
+          icon = 'exclamation-circle';
+          className = 'warning-message';
+          break;
+        case 'info':
+          icon = 'info-circle';
+          className = 'info-message';
+          break;
+        default:
+          icon = 'check-circle';
+          className = 'success-message';
+      }
+      
+      messageDiv.className = className;
       messageDiv.innerHTML = `
-        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+        <i class="fas fa-${icon}"></i>
         <span>${message}</span>
+        <button class="message-close" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
       `;
       
       container.appendChild(messageDiv);
       
+      // 自动移除消息
       setTimeout(() => {
-        messageDiv.remove();
+        if (messageDiv.parentElement) {
+          messageDiv.remove();
+        }
       }, 5000);
     }
 
@@ -911,9 +1064,13 @@
       if (section === 'dashboard') {
         document.getElementById('dashboard-section').style.display = 'block';
         document.getElementById('cms-container').style.display = 'none';
+        // 启动自动刷新
+        startAutoRefresh();
       } else {
         document.getElementById('dashboard-section').style.display = 'none';
         document.getElementById('cms-container').style.display = 'block';
+        // 停止自动刷新
+        stopAutoRefresh();
         
         // 初始化Decap CMS
         if (!cmsInitialized) {
@@ -926,6 +1083,9 @@
 
     // 初始化Decap CMS
     function initializeDecapCMS() {
+      let retryCount = 0;
+      const maxRetries = 50; // 5秒超时
+      
       // 等待Decap CMS脚本加载完成
       const checkCMS = () => {
         if (typeof DecapCMS !== 'undefined') {
@@ -934,17 +1094,70 @@
             cmsInitialized = true;
             console.log('Decap CMS initialized successfully');
             showMessage('CMS加载成功', 'success');
+            
+            // 隐藏加载状态
+            const cmsContainer = document.getElementById('cms-container');
+            if (cmsContainer) {
+              cmsContainer.innerHTML = '<div id="cms"></div>';
+            }
           } catch (error) {
             console.error('Failed to initialize Decap CMS:', error);
             showMessage('CMS初始化失败，请刷新页面重试', 'error');
+            showCMSLoadingError('CMS初始化失败: ' + error.message);
           }
         } else {
-          console.log('Waiting for Decap CMS to load...');
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            console.error('Decap CMS loading timeout');
+            showMessage('CMS加载超时，请检查网络连接', 'error');
+            showCMSLoadingError('CMS加载超时，请检查网络连接或刷新页面');
+            return;
+          }
+          console.log(`Waiting for Decap CMS to load... (${retryCount}/${maxRetries})`);
           setTimeout(checkCMS, 100);
         }
       };
       
+      // 显示加载状态
+      showCMSLoading();
       checkCMS();
+    }
+
+    // 显示CMS加载状态
+    function showCMSLoading() {
+      const cmsContainer = document.getElementById('cms-container');
+      if (cmsContainer) {
+        cmsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--gray-600);">
+            <div class="loading-spinner" style="margin-bottom: 1rem;"></div>
+            <h3>正在加载内容管理系统...</h3>
+            <p>请稍候，这可能需要几秒钟时间</p>
+          </div>
+        `;
+      }
+    }
+
+    // 显示CMS加载错误
+    function showCMSLoadingError(message) {
+      const cmsContainer = document.getElementById('cms-container');
+      if (cmsContainer) {
+        cmsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--danger);">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h3>加载失败</h3>
+            <p>${message}</p>
+            <button class="btn btn-primary" onclick="retryCMS()" style="margin-top: 1rem;">
+              <i class="fas fa-redo"></i> 重试
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // 重试CMS加载
+    function retryCMS() {
+      cmsInitialized = false;
+      initializeDecapCMS();
     }
 
     // 编辑文章
