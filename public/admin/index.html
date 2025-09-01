@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>虎博客 - 高级管理后台</title>
+  <title>虎博客 - 专业管理后台</title>
   <link rel="icon" href="/favicon.ico" />
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   
   <style>
     :root {
@@ -17,6 +18,7 @@
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
+      --info: #3b82f6;
       --gray-50: #f9fafb;
       --gray-100: #f3f4f6;
       --gray-200: #e5e7eb;
@@ -43,22 +45,92 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: var(--gray-50);
       color: var(--gray-800);
       line-height: 1.6;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
     .admin-container {
       display: flex;
-      flex-direction: column;
       min-height: 100vh;
     }
 
-    .admin-header {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
+    /* 侧边栏 */
+    .sidebar {
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--gray-200);
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 20;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sidebar-logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-logo i {
+      font-size: 1.5rem;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--gray-50);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+
+    .nav-item.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-left-color: var(--primary);
+      font-weight: 500;
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      min-height: 100vh;
+    }
+
+    .top-bar {
+      background: white;
       border-bottom: 1px solid var(--gray-200);
       padding: 1rem 2rem;
       display: flex;
@@ -69,60 +141,255 @@
       z-index: 10;
     }
 
-    .admin-logo {
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .user-menu {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      font-weight: 600;
-      font-size: 1.25rem;
-      color: var(--primary);
+      gap: 1rem;
     }
 
-    .admin-logo svg {
-      width: 28px;
-      height: 28px;
-      stroke: var(--primary);
-      stroke-width: 2;
-      fill: none;
-    }
-
-    .admin-main {
-      flex: 1;
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .content-area {
       padding: 2rem;
     }
 
-    .admin-card {
-      background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
-      padding: 2.5rem;
-      width: 100%;
-      max-width: 520px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .admin-card-header {
+    /* 仪表板卡片 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
-    .admin-card-header h1 {
-      font-size: 1.8rem;
+    .stat-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .stat-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
       font-weight: 700;
       color: var(--gray-800);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
 
-    .admin-card-header p {
-      color: var(--gray-500);
-      font-size: 1rem;
-      line-height: 1.5;
+    .stat-change {
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
+    .stat-change.positive {
+      color: var(--success);
+    }
+
+    .stat-change.negative {
+      color: var(--danger);
+    }
+
+    /* 内容卡片 */
+    .content-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* 表格样式 */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--gray-700);
+      font-size: 0.875rem;
+    }
+
+    .table tr:hover {
+      background: var(--gray-50);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-published {
+      background: var(--success);
+      color: white;
+    }
+
+    .status-draft {
+      background: var(--gray-300);
+      color: var(--gray-700);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-bar {
+        padding: 1rem;
+      }
+
+      .content-area {
+        padding: 1rem;
+      }
+    }
+
+    /* 加载动画 */
     .loading-spinner {
       border: 4px solid var(--gray-200);
       border-top: 4px solid var(--primary);
@@ -130,7 +397,7 @@
       width: 50px;
       height: 50px;
       animation: spin 1s linear infinite;
-      margin: 2.5rem auto;
+      margin: 2rem auto;
     }
 
     @keyframes spin {
@@ -138,179 +405,384 @@
       100% { transform: rotate(360deg); }
     }
 
-    .error-message {
-      background: var(--danger);
-      color: white;
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      margin-top: 2rem;
-      font-weight: 500;
-      font-size: 0.95rem;
-      text-align: left;
-      line-height: 1.6;
-    }
-
-    .error-message h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.75rem;
-      font-weight: 600;
-    }
-
-    .error-message ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 0.5rem;
-    }
-
-    .error-message li {
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-    }
-
-    .error-message li:last-child {
-      margin-bottom: 0;
-    }
-
-    .error-message li svg {
-      flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      stroke: white;
-      stroke-width: 2;
-    }
-
+    /* CMS 容器 */
     #decap-cms {
       width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
+      height: calc(100vh - 80px);
+      display: none;
+    }
+
+    /* 登录状态 */
+    .login-status {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--success);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
     }
   </style>
 </head>
 <body>
   <div class="admin-container">
-    <header class="admin-header">
-      <div class="admin-logo">
-        <svg viewBox="0 0 24 24">
-          <path d="M20.24 12.24l-7.07 7.07a4.5 4.5 0 0 1-6.36 0L4 16V4l9.93 9.93a4.5 4.5 0 0 1 0 6.36z"></path>
-        </svg>
-        <span>虎博客管理</span>
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-tiger"></i>
+          <span>虎博客管理</span>
+        </div>
       </div>
-    </header>
+      
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-section="dashboard">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>仪表板</span>
+        </a>
+        <a href="#posts" class="nav-item" data-section="posts">
+          <i class="fas fa-file-alt"></i>
+          <span>文章管理</span>
+        </a>
+        <a href="#pages" class="nav-item" data-section="pages">
+          <i class="fas fa-file"></i>
+          <span>页面管理</span>
+        </a>
+        <a href="#media" class="nav-item" data-section="media">
+          <i class="fas fa-images"></i>
+          <span>媒体管理</span>
+        </a>
+        <a href="#friends" class="nav-item" data-section="friends">
+          <i class="fas fa-link"></i>
+          <span>友情链接</span>
+        </a>
+        <a href="#talking" class="nav-item" data-section="talking">
+          <i class="fas fa-comments"></i>
+          <span>说说动态</span>
+        </a>
+        <a href="#profile" class="nav-item" data-section="profile">
+          <i class="fas fa-user"></i>
+          <span>个人资料</span>
+        </a>
+        <a href="#settings" class="nav-item" data-section="settings">
+          <i class="fas fa-cog"></i>
+          <span>网站设置</span>
+        </a>
+        <a href="#analytics" class="nav-item" data-section="analytics">
+          <i class="fas fa-chart-bar"></i>
+          <span>数据统计</span>
+        </a>
+      </nav>
+    </aside>
 
-    <main class="admin-main">
-      <div id="cms-status-card" class="admin-card">
-        <div class="admin-card-header">
-          <h1>加载管理后台</h1>
-          <p>请稍候，我们正在准备您的内容管理系统。</p>
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <!-- 顶部栏 -->
+      <header class="top-bar">
+        <div class="page-title" id="page-title">仪表板</div>
+        <div class="user-menu">
+          <div class="user-avatar" id="user-avatar">虎</div>
+          <button class="btn btn-secondary" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            退出登录
+          </button>
         </div>
-        <div id="loading-indicator">
-          <div class="loading-spinner"></div>
-          <p style="color: var(--gray-600); font-size: 0.9rem; margin-top: 1rem;">如果长时间未加载，请检查网络连接或 Netlify Identity 设置。</p>
-        </div>
-        <div id="error-indicator" class="error-message" style="display: none;">
-          <h3>加载失败！</h3>
-          <p>请检查以下问题：</p>
-          <ul>
-            <li>
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <circle cx="12" cy="12" r="9" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-                <polyline points="11 12 12 12 12 16" />
-              </svg>
-              确保 Netlify Identity 已在 Netlify 后台启用。
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <circle cx="12" cy="12" r="9" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-                <polyline points="11 12 12 12 12 16" />
-              </svg>
-              确保 Git Gateway 已在 Netlify 后台启用。
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <circle cx="12" cy="12" r="9" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-                <polyline points="11 12 12 12 12 16" />
-              </svg>
-              检查浏览器控制台是否有错误信息。
-            </li>
-          </ul>
+      </header>
+
+      <!-- 内容区域 -->
+      <div class="content-area">
+        <!-- 仪表板 -->
+        <section id="dashboard-section" class="section active">
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-title">总文章数</div>
+                <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
+                  <i class="fas fa-file-alt"></i>
+                </div>
+              </div>
+              <div class="stat-value" id="total-posts">0</div>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>较上月增长 12%</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-title">总访问量</div>
+                <div class="stat-icon" style="background: #dbeafe; color: var(--info);">
+                  <i class="fas fa-eye"></i>
+                </div>
+              </div>
+              <div class="stat-value" id="total-views">0</div>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>较上月增长 8%</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-title">评论数</div>
+                <div class="stat-icon" style="background: #fef3c7; color: var(--warning);">
+                  <i class="fas fa-comments"></i>
+                </div>
+              </div>
+              <div class="stat-value" id="total-comments">0</div>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>较上月增长 15%</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-title">友链数</div>
+                <div class="stat-icon" style="background: #dcfce7; color: var(--success);">
+                  <i class="fas fa-link"></i>
+                </div>
+              </div>
+              <div class="stat-value" id="total-friends">0</div>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>较上月增长 3%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div class="card-header">
+              <div class="card-title">最近文章</div>
+              <div class="card-actions">
+                <a href="#posts" class="btn btn-primary" onclick="showSection('posts')">
+                  <i class="fas fa-plus"></i>
+                  新建文章
+                </a>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table" id="recent-posts-table">
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>状态</th>
+                    <th>发布时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                      <div class="loading-spinner"></div>
+                      <p style="margin-top: 1rem; color: var(--gray-500);">加载中...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 其他部分将通过JavaScript动态加载 -->
+        <div id="cms-container" style="display: none;">
+          <div id="decap-cms"></div>
         </div>
       </div>
-      <div id="decap-cms" style="display: none;"></div>
     </main>
   </div>
 
+  <!-- 登录状态提示 -->
+  <div class="login-status" id="login-status">
+    <i class="fas fa-check-circle"></i>
+    <span>登录成功！</span>
+  </div>
+
   <script>
-    const loadingIndicator = document.getElementById('loading-indicator');
-    const errorIndicator = document.getElementById('error-indicator');
-    const cmsStatusCard = document.getElementById('cms-status-card');
-    const decapCmsContainer = document.getElementById('decap-cms');
+    // 全局变量
+    let currentUser = null;
+    let currentSection = 'dashboard';
 
-    function showLoading() {
-      loadingIndicator.style.display = 'block';
-      errorIndicator.style.display = 'none';
-      cmsStatusCard.style.display = 'block';
-      decapCmsContainer.style.display = 'none';
-    }
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeAdmin();
+    });
 
-    function showError() {
-      loadingIndicator.style.display = 'none';
-      errorIndicator.style.display = 'block';
-      cmsStatusCard.style.display = 'block';
-      decapCmsContainer.style.display = 'none';
-    }
+    // 初始化管理后台
+    function initializeAdmin() {
+      if (typeof netlifyIdentity !== 'undefined') {
+        netlifyIdentity.on('init', user => {
+          console.log('Netlify Identity initialized', user);
+          if (user) {
+            currentUser = user;
+            showLoginStatus();
+            updateUserAvatar();
+            loadDashboardData();
+          } else {
+            netlifyIdentity.open();
+          }
+        });
 
-    function showCms() {
-      cmsStatusCard.style.display = 'none';
-      decapCmsContainer.style.display = 'flex'; // Use flex to allow CMS to take full height
-    }
+        netlifyIdentity.on('login', user => {
+          console.log('User logged in:', user);
+          currentUser = user;
+          showLoginStatus();
+          updateUserAvatar();
+          loadDashboardData();
+        });
 
-    // Initialize Netlify Identity
-    if (typeof netlifyIdentity !== 'undefined') {
-      netlifyIdentity.on('init', user => {
-        console.log('Netlify Identity initialized', user);
-        if (user) {
-          console.log('User already logged in:', user);
-          // If user is already logged in, show CMS container directly
-          showCms();
-        } else {
-          // If no user, show loading and wait for login
-          showLoading();
+        netlifyIdentity.on('logout', () => {
+          console.log('User logged out');
+          currentUser = null;
+          netlifyIdentity.open();
+        });
+
+        if (!netlifyIdentity.currentUser()) {
+          netlifyIdentity.open();
         }
-      });
+      } else {
+        console.error('Netlify Identity script not loaded.');
+        showError('Netlify Identity 脚本未加载');
+      }
+    }
 
-      netlifyIdentity.on('login', user => {
-        console.log('User logged in:', user);
-        showCms(); // Once logged in, show the CMS
-      });
+    // 显示登录状态
+    function showLoginStatus() {
+      const status = document.getElementById('login-status');
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
 
-      netlifyIdentity.on('logout', () => {
-        console.log('User logged out');
-        // Redirect or show login screen
-        netlifyIdentity.open();
-        showLoading(); // Show loading state again
-      });
+    // 更新用户头像
+    function updateUserAvatar() {
+      const avatar = document.getElementById('user-avatar');
+      if (currentUser && currentUser.user_metadata && currentUser.user_metadata.full_name) {
+        avatar.textContent = currentUser.user_metadata.full_name.charAt(0);
+      } else {
+        avatar.textContent = '虎';
+      }
+    }
 
-      // Open login dialog if not logged in
-      if (!netlifyIdentity.currentUser()) {
-        netlifyIdentity.open();
+    // 加载仪表板数据
+    function loadDashboardData() {
+      // 模拟加载数据
+      setTimeout(() => {
+        document.getElementById('total-posts').textContent = '12';
+        document.getElementById('total-views').textContent = '1,234';
+        document.getElementById('total-comments').textContent = '56';
+        document.getElementById('total-friends').textContent = '8';
+        
+        // 加载最近文章
+        loadRecentPosts();
+      }, 1000);
+    }
+
+    // 加载最近文章
+    function loadRecentPosts() {
+      const tbody = document.querySelector('#recent-posts-table tbody');
+      tbody.innerHTML = `
+        <tr>
+          <td>欢迎来到我的博客</td>
+          <td>生活</td>
+          <td><span class="status-badge status-published">已发布</span></td>
+          <td>2024-01-15</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td>我的第一个项目</td>
+          <td>技术</td>
+          <td><span class="status-badge status-published">已发布</span></td>
+          <td>2024-01-16</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // 显示错误信息
+    function showError(message) {
+      const contentArea = document.querySelector('.content-area');
+      contentArea.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+          <h2 style="color: var(--danger); margin-bottom: 1rem;">加载失败</h2>
+          <p style="color: var(--gray-600);">${message}</p>
+        </div>
+      `;
+    }
+
+    // 退出登录
+    function logout() {
+      if (typeof netlifyIdentity !== 'undefined') {
+        netlifyIdentity.logout();
+      }
+    }
+
+    // 显示指定部分
+    function showSection(section) {
+      // 更新导航状态
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+      // 更新页面标题
+      const titles = {
+        dashboard: '仪表板',
+        posts: '文章管理',
+        pages: '页面管理',
+        media: '媒体管理',
+        friends: '友情链接',
+        talking: '说说动态',
+        profile: '个人资料',
+        settings: '网站设置',
+        analytics: '数据统计'
+      };
+      document.getElementById('page-title').textContent = titles[section] || '管理后台';
+
+      // 显示CMS或仪表板
+      if (section === 'dashboard') {
+        document.getElementById('dashboard-section').style.display = 'block';
+        document.getElementById('cms-container').style.display = 'none';
+      } else {
+        document.getElementById('dashboard-section').style.display = 'none';
+        document.getElementById('cms-container').style.display = 'block';
+        // 这里可以加载Decap CMS
       }
 
-    } else {
-      console.error('Netlify Identity script not loaded.');
-      showError();
+      currentSection = section;
     }
+
+    // 导航点击事件
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const section = this.getAttribute('data-section');
+        showSection(section);
+      });
+    });
   </script>
-  <!-- Decap CMS script should be loaded after Netlify Identity -->
+
+  <!-- Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
 </body>
 </html>

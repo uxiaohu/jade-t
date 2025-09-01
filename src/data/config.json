@@ -1,0 +1,10 @@
+{
+  "title": "虎博客",
+  "description": "专注于前端开发与相关技术的实战分享，涵盖Vue框架、Node.js、Serverless等，并涉及Node、Python、Linux、Docker等领域。",
+  "keywords": ["技术", "博客", "前端", "开发", "生活"],
+  "author": "虎",
+  "favicon": "/favicon.ico",
+  "logo": "/assets/images/logo.png",
+  "icp": "京ICP备12345678号",
+  "analytics": "<!-- 统计代码 -->"
+}

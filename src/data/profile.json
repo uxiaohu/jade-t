@@ -1,32 +1,10 @@
 {
-  "basic": {
-    "name": "博主",
-    "nickname": "小博主",
-    "avatar": "/assets/images/avatar.jpg",
-    "bio": "热爱技术，热爱生活",
-    "email": "example@email.com",
-    "location": "中国",
-    "website": "https://jade-t.netlify.app"
-  },
-  "social": {
-    "github": "https://github.com/yourusername",
-    "twitter": "https://twitter.com/yourusername",
-    "weibo": "https://weibo.com/yourusername",
-    "bilibili": "https://space.bilibili.com/yourusername",
-    "zhihu": "https://www.zhihu.com/people/yourusername"
-  },
-  "appearance": {
-    "theme": "light",
-    "primaryColor": "#007cba",
-    "backgroundColor": "#ffffff",
-    "headerImage": "/assets/images/header-bg.jpg",
-    "logo": "/assets/images/logo.png"
-  },
-  "content": {
-    "siteTitle": "我的博客",
-    "siteDescription": "分享技术、生活和思考",
-    "siteKeywords": "技术,博客,生活,思考",
-    "footerText": "© 2024 我的博客. All rights reserved.",
-    "announcement": "欢迎来到我的博客！"
-  }
+  "name": "虎",
+  "avatar": "https://q1.qlogo.cn/g?b=qq&nk=1655466387&s=640",
+  "bio": "热爱技术，热爱生活，喜欢分享技术心得和生活感悟。",
+  "email": "zhangyuhu@example.com",
+  "github": "https://github.com/uxiaohu",
+  "weibo": "https://weibo.com/example",
+  "qq": "1655466387",
+  "wechat": "zhangyuhu_wechat"
 }
