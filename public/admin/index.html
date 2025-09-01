@@ -463,6 +463,14 @@
       z-index: 1000;
     }
 
+    .modal[inert] {
+      pointer-events: none;
+    }
+
+    .modal:not([inert]) {
+      pointer-events: auto;
+    }
+
     .modal-content {
       position: absolute;
       top: 50%;
@@ -679,13 +687,13 @@
   </div>
 
   <!-- 确认删除模态框 -->
-  <div class="modal" id="delete-modal">
+  <div class="modal" id="delete-modal" role="dialog" aria-labelledby="delete-modal-title" aria-describedby="delete-modal-description">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">确认删除</h3>
-        <button class="close" onclick="closeModal('delete-modal')">&times;</button>
+        <h3 class="modal-title" id="delete-modal-title">确认删除</h3>
+        <button class="close" onclick="closeModal('delete-modal')" aria-label="关闭对话框">&times;</button>
       </div>
-      <p>确定要删除这个项目吗？此操作无法撤销。</p>
+      <p id="delete-modal-description">确定要删除这个项目吗？此操作无法撤销。</p>
       <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
         <button class="btn btn-secondary" onclick="closeModal('delete-modal')">取消</button>
         <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
@@ -822,7 +830,7 @@
               <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="editPost('${post.id}')">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deletePost('${post.id}', '${post.title}')">
+              <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deletePost('${post.id}', '${post.title}', event)">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -918,19 +926,25 @@
 
     // 初始化Decap CMS
     function initializeDecapCMS() {
-      if (typeof DecapCMS !== 'undefined') {
-        try {
-          DecapCMS.init();
-          cmsInitialized = true;
-          console.log('Decap CMS initialized successfully');
-        } catch (error) {
-          console.error('Failed to initialize Decap CMS:', error);
-          showMessage('CMS初始化失败，请刷新页面重试', 'error');
+      // 等待Decap CMS脚本加载完成
+      const checkCMS = () => {
+        if (typeof DecapCMS !== 'undefined') {
+          try {
+            DecapCMS.init();
+            cmsInitialized = true;
+            console.log('Decap CMS initialized successfully');
+            showMessage('CMS加载成功', 'success');
+          } catch (error) {
+            console.error('Failed to initialize Decap CMS:', error);
+            showMessage('CMS初始化失败，请刷新页面重试', 'error');
+          }
+        } else {
+          console.log('Waiting for Decap CMS to load...');
+          setTimeout(checkCMS, 100);
         }
-      } else {
-        console.error('Decap CMS not loaded');
-        showMessage('CMS加载失败，请检查网络连接', 'error');
-      }
+      };
+      
+      checkCMS();
     }
 
     // 编辑文章
@@ -940,9 +954,13 @@
     }
 
     // 删除文章
-    function deletePost(postId, postTitle) {
-      deleteTarget = { id: postId, title: postTitle };
-      document.getElementById('delete-modal').style.display = 'block';
+    function deletePost(postId, postTitle, event) {
+      deleteTarget = { 
+        id: postId, 
+        title: postTitle,
+        triggerButton: event.target.closest('button')
+      };
+      openModal('delete-modal');
     }
 
     // 确认删除
@@ -968,7 +986,27 @@
 
     // 关闭模态框
     function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'none';
+      modal.setAttribute('inert', '');
+      
+      // 恢复焦点到触发按钮
+      if (deleteTarget && deleteTarget.triggerButton) {
+        deleteTarget.triggerButton.focus();
+      }
+    }
+
+    // 打开模态框
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'block';
+      modal.removeAttribute('inert');
+      
+      // 设置焦点到第一个可聚焦元素
+      const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (firstFocusable) {
+        firstFocusable.focus();
+      }
     }
 
     // 导航点击事件
@@ -983,7 +1021,36 @@
     // 点击模态框外部关闭
     window.addEventListener('click', function(event) {
       if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+        closeModal(event.target.id);
+      }
+    });
+
+    // 键盘导航支持
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const openModal = document.querySelector('.modal:not([inert])');
+        if (openModal) {
+          closeModal(openModal.id);
+        }
+      }
+    });
+
+    // 模态框焦点管理
+    document.addEventListener('focusin', function(event) {
+      const modal = event.target.closest('.modal');
+      if (modal && modal.style.display === 'block') {
+        // 确保焦点在模态框内
+        const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        
+        if (event.target === firstElement && event.shiftKey) {
+          event.preventDefault();
+          lastElement.focus();
+        } else if (event.target === lastElement && !event.shiftKey) {
+          event.preventDefault();
+          firstElement.focus();
+        }
       }
     });
   </script>
