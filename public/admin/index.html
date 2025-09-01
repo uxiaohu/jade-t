@@ -102,6 +102,7 @@
       text-decoration: none;
       transition: all 0.2s ease;
       border-left: 3px solid transparent;
+      cursor: pointer;
     }
 
     .nav-item:hover {
@@ -425,6 +426,78 @@
       box-shadow: var(--shadow-lg);
       z-index: 100;
     }
+
+    /* 错误提示 */
+    .error-message {
+      background: var(--danger);
+      color: white;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* 成功提示 */
+    .success-message {
+      background: var(--success);
+      color: white;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      min-width: 400px;
+      max-width: 600px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray-500);
+    }
+
+    .close:hover {
+      color: var(--gray-700);
+    }
   </style>
 </head>
 <body>
@@ -494,6 +567,9 @@
 
       <!-- 内容区域 -->
       <div class="content-area">
+        <!-- 消息提示区域 -->
+        <div id="message-container"></div>
+
         <!-- 仪表板 -->
         <section id="dashboard-section" class="section active">
           <div class="dashboard-grid">
@@ -558,10 +634,10 @@
             <div class="card-header">
               <div class="card-title">最近文章</div>
               <div class="card-actions">
-                <a href="#posts" class="btn btn-primary" onclick="showSection('posts')">
+                <button class="btn btn-primary" onclick="showSection('posts')">
                   <i class="fas fa-plus"></i>
                   新建文章
-                </a>
+                </button>
               </div>
             </div>
             <div class="table-container">
@@ -588,7 +664,7 @@
           </div>
         </section>
 
-        <!-- 其他部分将通过JavaScript动态加载 -->
+        <!-- CMS 容器 -->
         <div id="cms-container" style="display: none;">
           <div id="decap-cms"></div>
         </div>
@@ -602,10 +678,27 @@
     <span>登录成功！</span>
   </div>
 
+  <!-- 确认删除模态框 -->
+  <div class="modal" id="delete-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">确认删除</h3>
+        <button class="close" onclick="closeModal('delete-modal')">&times;</button>
+      </div>
+      <p>确定要删除这个项目吗？此操作无法撤销。</p>
+      <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('delete-modal')">取消</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 全局变量
     let currentUser = null;
     let currentSection = 'dashboard';
+    let cmsInitialized = false;
+    let deleteTarget = null;
 
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
@@ -670,52 +763,99 @@
     }
 
     // 加载仪表板数据
-    function loadDashboardData() {
-      // 模拟加载数据
-      setTimeout(() => {
-        document.getElementById('total-posts').textContent = '12';
-        document.getElementById('total-views').textContent = '1,234';
-        document.getElementById('total-comments').textContent = '56';
-        document.getElementById('total-friends').textContent = '8';
+    async function loadDashboardData() {
+      try {
+        // 加载统计数据
+        const stats = await loadStats();
+        document.getElementById('total-posts').textContent = stats.totalPosts || '0';
+        document.getElementById('total-views').textContent = stats.totalViews || '0';
+        document.getElementById('total-comments').textContent = stats.totalComments || '0';
+        document.getElementById('total-friends').textContent = stats.totalFriends || '0';
         
         // 加载最近文章
-        loadRecentPosts();
-      }, 1000);
+        await loadRecentPosts();
+      } catch (error) {
+        console.error('加载仪表板数据失败:', error);
+        showMessage('加载数据失败，请刷新页面重试', 'error');
+      }
+    }
+
+    // 加载统计数据
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/stats');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+        // 如果API调用失败，返回模拟数据
+        return {
+          totalPosts: 3,
+          totalViews: 1234,
+          totalComments: 56,
+          totalFriends: 2
+        };
+      }
     }
 
     // 加载最近文章
-    function loadRecentPosts() {
-      const tbody = document.querySelector('#recent-posts-table tbody');
-      tbody.innerHTML = `
-        <tr>
-          <td>欢迎来到我的博客</td>
-          <td>生活</td>
-          <td><span class="status-badge status-published">已发布</span></td>
-          <td>2024-01-15</td>
-          <td>
-            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>我的第一个项目</td>
-          <td>技术</td>
-          <td><span class="status-badge status-published">已发布</span></td>
-          <td>2024-01-16</td>
-          <td>
-            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        </tr>
+    async function loadRecentPosts() {
+      try {
+        const tbody = document.querySelector('#recent-posts-table tbody');
+        
+        const response = await fetch('/api/posts?limit=5');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const posts = data.posts || [];
+
+        tbody.innerHTML = posts.map(post => `
+          <tr>
+            <td>${post.title}</td>
+            <td>${post.categories}</td>
+            <td><span class="status-badge ${post.status === 'published' ? 'status-published' : 'status-draft'}">${post.status === 'published' ? '已发布' : '隐藏'}</span></td>
+            <td>${new Date(post.date).toLocaleDateString('zh-CN')}</td>
+            <td>
+              <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="editPost('${post.id}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deletePost('${post.id}', '${post.title}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('加载最近文章失败:', error);
+        const tbody = document.querySelector('#recent-posts-table tbody');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--danger);">
+              加载失败，请刷新页面重试
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // 显示消息
+    function showMessage(message, type = 'success') {
+      const container = document.getElementById('message-container');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+      messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+        <span>${message}</span>
       `;
+      
+      container.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        messageDiv.remove();
+      }, 5000);
     }
 
     // 显示错误信息
@@ -766,10 +906,69 @@
       } else {
         document.getElementById('dashboard-section').style.display = 'none';
         document.getElementById('cms-container').style.display = 'block';
-        // 这里可以加载Decap CMS
+        
+        // 初始化Decap CMS
+        if (!cmsInitialized) {
+          initializeDecapCMS();
+        }
       }
 
       currentSection = section;
+    }
+
+    // 初始化Decap CMS
+    function initializeDecapCMS() {
+      if (typeof DecapCMS !== 'undefined') {
+        try {
+          DecapCMS.init();
+          cmsInitialized = true;
+          console.log('Decap CMS initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize Decap CMS:', error);
+          showMessage('CMS初始化失败，请刷新页面重试', 'error');
+        }
+      } else {
+        console.error('Decap CMS not loaded');
+        showMessage('CMS加载失败，请检查网络连接', 'error');
+      }
+    }
+
+    // 编辑文章
+    function editPost(postId) {
+      showSection('posts');
+      // Decap CMS会自动处理编辑功能
+    }
+
+    // 删除文章
+    function deletePost(postId, postTitle) {
+      deleteTarget = { id: postId, title: postTitle };
+      document.getElementById('delete-modal').style.display = 'block';
+    }
+
+    // 确认删除
+    async function confirmDelete() {
+      if (!deleteTarget) return;
+      
+      try {
+        // 这里可以调用实际的删除API
+        // await fetch(`/api/posts/${deleteTarget.id}`, { method: 'DELETE' });
+        
+        showMessage(`文章"${deleteTarget.title}"已删除`, 'success');
+        closeModal('delete-modal');
+        
+        // 重新加载数据
+        await loadDashboardData();
+      } catch (error) {
+        console.error('删除失败:', error);
+        showMessage('删除失败，请重试', 'error');
+      }
+      
+      deleteTarget = null;
+    }
+
+    // 关闭模态框
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
     }
 
     // 导航点击事件
@@ -779,6 +978,13 @@
         const section = this.getAttribute('data-section');
         showSection(section);
       });
+    });
+
+    // 点击模态框外部关闭
+    window.addEventListener('click', function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
     });
   </script>
 

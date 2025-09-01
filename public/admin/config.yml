@@ -10,12 +10,12 @@ backend:
 
 local_backend: true
 
-media_folder: "public/uploads"
-public_folder: "/uploads"
+media_folder: "public/assets/uploads"
+public_folder: "/assets/uploads"
 
 # 站点设置
-site_url: "https://your-blog.com"
-display_url: "https://your-blog.com"
+site_url: "https://jade-t.netlify.app"
+display_url: "https://jade-t.netlify.app"
 logo_url: "/assets/images/logo.png"
 locale: "zh_Hans"
 
@@ -28,10 +28,10 @@ slug:
 
 collections:
   # 博客文章管理
-  - name: "posts"
+  - name: "blog"
     label: "文章管理"
     label_singular: "文章"
-    folder: "src/posts"
+    folder: "src/content/blog"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     identifier_field: "title"
@@ -39,10 +39,10 @@ collections:
     sortable_fields: ["date", "title", "updated"]
     view_filters:
       - label: "已发布"
-        field: "draft"
+        field: "hide"
         pattern: false
-      - label: "草稿"
-        field: "draft"
+      - label: "隐藏"
+        field: "hide"
         pattern: true
       - label: "置顶文章"
         field: "top"
@@ -64,19 +64,17 @@ collections:
       - {label: "分类", name: "categories", widget: "select", options: ["技术", "生活", "随笔", "教程", "分享"], required: true}
       - {label: "标签", name: "tags", widget: "list", required: false, hint: "多个标签用回车分隔"}
       - {label: "封面图片", name: "cover", widget: "image", required: false, hint: "建议尺寸：1200x630"}
-      - {label: "是否草稿", name: "draft", widget: "boolean", default: false}
       - {label: "是否推荐", name: "recommend", widget: "boolean", default: false}
       - {label: "是否置顶", name: "top", widget: "boolean", default: false}
       - {label: "是否隐藏", name: "hide", widget: "boolean", default: false}
       - {label: "摘要", name: "excerpt", widget: "text", required: false, hint: "如不填写将自动提取正文前150字"}
-      - {label: "SEO关键词", name: "keywords", widget: "list", required: false}
       - {label: "正文", name: "body", widget: "markdown", required: true}
 
   # 页面管理
   - name: "pages"
     label: "页面管理"
     label_singular: "页面"
-    folder: "src/pages"
+    folder: "src/content/pages"
     create: true
     slug: "{{slug}}"
     fields:
