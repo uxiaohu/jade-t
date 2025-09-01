@@ -1536,10 +1536,10 @@
       }
     }
 
-    // 重试CMS加载
+    // 重试CMS加载 - 已在Decap CMS加载脚本中重新定义
+    // 保留此函数以避免引用错误
     function retryCMS() {
-      cmsInitialized = false;
-      initializeDecapCMS();
+      window.retryCMS && window.retryCMS();
     }
 
     // 导出数据
@@ -1797,10 +1797,37 @@
     });
   </script>
 
-  <!-- Decap CMS - 多CDN备用方案 -->
+  <!-- Decap CMS - 本地模块 + 多CDN备用方案 -->
   <script>
+    // 尝试从本地模块加载Decap CMS
+    function loadLocalDecapCMS() {
+      return new Promise((resolve, reject) => {
+        // 检查是否在开发环境下运行
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          try {
+            // 尝试动态导入本地模块
+            import('/node_modules/decap-cms/dist/decap-cms.js')
+              .then(module => {
+                console.log('Decap CMS loaded from local module');
+                resolve();
+              })
+              .catch(error => {
+                console.warn('Failed to load from local module:', error);
+                reject();
+              });
+          } catch (error) {
+            console.warn('Error trying to load local module:', error);
+            reject();
+          }
+        } else {
+          // 生产环境直接尝试CDN
+          reject();
+        }
+      });
+    }
+
     // 尝试多个CDN源加载Decap CMS
-    function loadDecapCMS() {
+    function loadDecapCMSFromCDN() {
       const cdnSources = [
         'https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js',
         'https://cdn.jsdelivr.net/npm/decap-cms@^3.1.2/dist/decap-cms.js',
@@ -1812,7 +1839,27 @@
       function tryLoadScript() {
         if (currentIndex >= cdnSources.length) {
           console.error('所有CDN源都加载失败');
-          showCMSLoadingError('无法加载CMS，请检查网络连接或稍后重试');
+          // 显示加载错误信息
+          const cmsContainer = document.getElementById('decap-cms');
+          if (cmsContainer) {
+              cmsContainer.style.display = 'block';
+              cmsContainer.innerHTML = `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                      <div class="error-message">
+                          <i class="fas fa-exclamation-circle"></i>
+                          <span>无法加载CMS，请检查网络连接或稍后重试</span>
+                      </div>
+                      <div style="margin-top: 1rem; text-align: center;">
+                          <button class="btn btn-primary" onclick="retryCMS()" style="margin-right: 0.5rem;">
+                              <i class="fas fa-redo"></i> 重试
+                          </button>
+                          <button class="btn btn-secondary" onclick="window.location.reload()" style="margin-left: 0.5rem;">
+                              <i class="fas fa-sync-alt"></i> 刷新页面
+                          </button>
+                      </div>
+                  </div>
+              `;
+          }
           return;
         }
         
@@ -1834,11 +1881,29 @@
       tryLoadScript();
     }
     
+    // 重试CMS加载
+    function retryCMS() {
+      const cmsContainer = document.getElementById('decap-cms');
+      if (cmsContainer) {
+          cmsContainer.innerHTML = '<div class="loading-spinner"></div>';
+      }
+      initDecapCMS();
+    }
+
+    // 优先尝试本地模块，失败则回退到CDN
+    async function initDecapCMS() {
+      try {
+        await loadLocalDecapCMS();
+      } catch (error) {
+        loadDecapCMSFromCDN();
+      }
+    }
+
     // 页面加载完成后开始加载CMS
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadDecapCMS);
+      document.addEventListener('DOMContentLoaded', initDecapCMS);
     } else {
-      loadDecapCMS();
+      initDecapCMS();
     }
   </script>
 </body>
