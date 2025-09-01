@@ -1,16 +1,16 @@
 {
   "friends": [
     {
-      "name": "韩小韩博客",
-      "link": "https://www.vvhan.com",
+      "name": "虎博客",
+      "link": "https://jade-t.netlify.app",
       "avatar": "https://q1.qlogo.cn/g?b=qq&nk=1655466387&s=640",
-      "descr": "运气是计划之外的东西."
+      "descr": "热爱技术，热爱生活，喜欢分享技术心得和生活感悟。"
     },
     {
-      "name": "韩小韩API",
-      "link": "https://api.vvhan.com",
-      "avatar": "https://api.vvhan.com/static/images/logo.webp",
-      "descr": "免费Web API数据接口调用服务平台."
+      "name": "GitHub",
+      "link": "https://github.com/uxiaohu",
+      "avatar": "https://github.com/uxiaohu.png",
+      "descr": "我的GitHub主页，分享开源项目和技术心得。"
     }
   ]
 }

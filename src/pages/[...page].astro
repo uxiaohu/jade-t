@@ -29,6 +29,7 @@ export async function getStaticPaths(options: GetStaticPathsOptions) {
 
 const { page } = Astro.props;
 const { data = [], ...page_data } = page || { data: [] };
+
 // 页面 Info
 import SITE_CONFIG from "@/config";
 const { Description } = SITE_CONFIG;

@@ -710,7 +710,7 @@
         <div class="sidebar-logo">
           <i class="fas fa-tiger"></i>
         <span>虎博客管理</span>
-        </div>
+      </div>
       </div>
       
       <nav class="sidebar-nav">
@@ -771,8 +771,8 @@
             <i class="fas fa-sign-out-alt"></i>
             退出登录
           </button>
-        </div>
-      </header>
+      </div>
+    </header>
 
       <!-- 内容区域 -->
       <div class="content-area">
@@ -785,7 +785,7 @@
           <div id="dashboard-loading" style="display: none; text-align: center; padding: 2rem; color: var(--gray-500);">
             <div class="loading-spinner" style="margin-bottom: 1rem;"></div>
             <p>正在加载数据...</p>
-          </div>
+        </div>
           <div class="dashboard-grid">
             <!-- 快速操作面板 -->
             <div class="quick-actions-card">
@@ -960,14 +960,14 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
+        </div>
         </div>
         </section>
 
         <!-- CMS 容器 -->
         <div id="cms-container" style="display: none;">
           <div id="decap-cms"></div>
-        </div>
+      </div>
       </div>
     </main>
   </div>
@@ -1014,42 +1014,42 @@
 
         // 初始化管理后台
     function initializeAdmin() {
-      if (typeof netlifyIdentity !== 'undefined') {
-        netlifyIdentity.on('init', user => {
-          console.log('Netlify Identity initialized', user);
-          if (user) {
+    if (typeof netlifyIdentity !== 'undefined') {
+      netlifyIdentity.on('init', user => {
+        console.log('Netlify Identity initialized', user);
+        if (user) {
             currentUser = user;
             showLoginStatus();
             updateUserAvatar();
             loadDashboardData();
             // 延迟检查系统状态，确保其他组件已加载
             setTimeout(() => checkSystemStatus(), 2000);
-          } else {
+        } else {
             netlifyIdentity.open();
-          }
-        });
+        }
+      });
 
-        netlifyIdentity.on('login', user => {
-          console.log('User logged in:', user);
+      netlifyIdentity.on('login', user => {
+        console.log('User logged in:', user);
           currentUser = user;
           showLoginStatus();
           updateUserAvatar();
           loadDashboardData();
           // 登录后检查系统状态
           setTimeout(() => checkSystemStatus(), 2000);
-        });
+      });
 
-        netlifyIdentity.on('logout', () => {
-          console.log('User logged out');
+      netlifyIdentity.on('logout', () => {
+        console.log('User logged out');
           currentUser = null;
-          netlifyIdentity.open();
-        });
+        netlifyIdentity.open();
+      });
 
-        if (!netlifyIdentity.currentUser()) {
-          netlifyIdentity.open();
-        }
-      } else {
-        console.error('Netlify Identity script not loaded.');
+      if (!netlifyIdentity.currentUser()) {
+        netlifyIdentity.open();
+      }
+    } else {
+      console.error('Netlify Identity script not loaded.');
         showError('Netlify Identity 脚本未加载');
       }
     }
