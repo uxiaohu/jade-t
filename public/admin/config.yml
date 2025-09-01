@@ -7,6 +7,13 @@ backend:
     delete: '删除{{collection}}："{{slug}}"'
     uploadMedia: '上传媒体：{{path}}'
     deleteMedia: '删除媒体：{{path}}'
+  # 添加认证配置
+  auth:
+    type: netlify
+    persistence: local_storage
+    gateway:
+      identity_url: https://jade-t.netlify.app/.netlify/identity
+      cookie: netlify-identity-widget
 
 local_backend: true
 

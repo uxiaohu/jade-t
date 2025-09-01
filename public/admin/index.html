@@ -1797,8 +1797,23 @@
     });
   </script>
 
+  <!-- Netlify Identity Widget -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
   <!-- Decap CMS - 本地模块 + 多CDN备用方案 -->
   <script>
+    // 初始化Netlify Identity Widget
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on('init', user => {
+        if (!user) {
+          window.netlifyIdentity.on('login', () => {
+            document.location.href = '/admin/';
+          });
+        }
+      });
+      window.netlifyIdentity.init();
+    }
+
     // 尝试从本地模块加载Decap CMS
     function loadLocalDecapCMS() {
       return new Promise((resolve, reject) => {
@@ -1813,7 +1828,19 @@
               })
               .catch(error => {
                 console.warn('Failed to load from local module:', error);
-                reject();
+          // 在开发环境下，如果没有Netlify Identity，尝试使用模拟令牌
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.warn('Running in development mode without authentication');
+            // 开发环境下模拟已登录状态
+            window.netlifyIdentity = window.netlifyIdentity || {};
+            window.netlifyIdentity.currentUser = () => ({
+              token: 'dev-token',
+              email: 'dev@example.com'
+            });
+            resolve();
+          } else {
+            reject();
+          }
               });
           } catch (error) {
             console.warn('Error trying to load local module:', error);
