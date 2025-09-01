@@ -1,21 +1,187 @@
 backend:
   name: git-gateway
-  branch: main # Branch to update (optional; defaults to master)
+  branch: main
+  commit_messages:
+    create: '创建{{collection}}："{{slug}}"'
+    update: '更新{{collection}}："{{slug}}"'
+    delete: '删除{{collection}}："{{slug}}"'
+    uploadMedia: '上传媒体：{{path}}'
+    deleteMedia: '删除媒体：{{path}}'
 
-media_folder: "public/assets/uploads" # Media files will be stored in the repo under static/uploads
-public_folder: "/assets/uploads" # The src attribute for uploaded media will begin with /uploads
+local_backend: true
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+# 站点设置
+site_url: "https://your-blog.com"
+display_url: "https://your-blog.com"
+logo_url: "/assets/images/logo.png"
+locale: "zh_Hans"
+
+publish_mode: editorial_workflow
+
+slug:
+  encoding: "unicode"
+  clean_accents: true
+  sanitize_replacement: "-"
 
 collections:
-  - name: "blog" # Used in routes, e.g., /admin/collections/blog
-    label: "博客文章" # Used in the UI
-    folder: "src/content/blog" # The path to the folder where the documents are stored
-    create: true # Allow users to create new documents in this collection
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}" # Filename template
-    fields: # The fields for each document, usually in front matter
-      - {label: "标题", name: "title", widget: "string"}
-      - {label: "发布日期", name: "publishDate", widget: "datetime"}
-      - {label: "作者", name: "author", widget: "string", default: "虎"}
-      - {label: "标签", name: "tags", widget: "list", default: ["未分类"]}
-      - {label: "封面图片", name: "cover", widget: "image", required: false}
-      - {label: "摘要", name: "description", widget: "text", required: false}
-      - {label: "正文", name: "body", widget: "markdown"}
+  # 博客文章管理
+  - name: "posts"
+    label: "文章管理"
+    label_singular: "文章"
+    folder: "src/posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    identifier_field: "title"
+    summary: "{{title}} - {{date}}"
+    sortable_fields: ["date", "title", "updated"]
+    view_filters:
+      - label: "已发布"
+        field: "draft"
+        pattern: false
+      - label: "草稿"
+        field: "draft"
+        pattern: true
+      - label: "置顶文章"
+        field: "top"
+        pattern: true
+      - label: "推荐文章"
+        field: "recommend"
+        pattern: true
+    view_groups:
+      - label: "按分类"
+        field: "categories"
+      - label: "按年份"
+        field: "date"
+        pattern: "YYYY"
+    fields:
+      - {label: "标题", name: "title", widget: "string", required: true}
+      - {label: "文章ID", name: "id", widget: "string", required: true, hint: "唯一标识符，建议使用英文或数字"}
+      - {label: "发布日期", name: "date", widget: "datetime", format: "YYYY-MM-DD HH:mm:ss", required: true}
+      - {label: "更新时间", name: "updated", widget: "datetime", format: "YYYY-MM-DD HH:mm:ss", required: false}
+      - {label: "分类", name: "categories", widget: "select", options: ["技术", "生活", "随笔", "教程", "分享"], required: true}
+      - {label: "标签", name: "tags", widget: "list", required: false, hint: "多个标签用回车分隔"}
+      - {label: "封面图片", name: "cover", widget: "image", required: false, hint: "建议尺寸：1200x630"}
+      - {label: "是否草稿", name: "draft", widget: "boolean", default: false}
+      - {label: "是否推荐", name: "recommend", widget: "boolean", default: false}
+      - {label: "是否置顶", name: "top", widget: "boolean", default: false}
+      - {label: "是否隐藏", name: "hide", widget: "boolean", default: false}
+      - {label: "摘要", name: "excerpt", widget: "text", required: false, hint: "如不填写将自动提取正文前150字"}
+      - {label: "SEO关键词", name: "keywords", widget: "list", required: false}
+      - {label: "正文", name: "body", widget: "markdown", required: true}
+
+  # 页面管理
+  - name: "pages"
+    label: "页面管理"
+    label_singular: "页面"
+    folder: "src/pages"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string", required: true}
+      - {label: "页面类型", name: "type", widget: "select", options: ["about", "links", "message", "talking", "custom"], required: true}
+      - {label: "页面描述", name: "description", widget: "text", required: false}
+      - {label: "是否显示评论", name: "comment", widget: "boolean", default: true}
+      - {label: "是否显示在导航", name: "nav", widget: "boolean", default: false}
+      - {label: "排序", name: "order", widget: "number", default: 0, value_type: "int"}
+      - {label: "正文", name: "body", widget: "markdown", required: true}
+
+  # 友情链接管理
+  - name: "friends"
+    label: "友情链接"
+    folder: "src/data"
+    extension: "json"
+    format: "json"
+    create: false
+    slug: "friends"
+    files:
+      - label: "友情链接"
+        name: "friends"
+        file: "src/data/friends.json"
+        fields:
+          - label: "友链列表"
+            name: "friends"
+            widget: "list"
+            fields:
+              - {label: "名称", name: "name", widget: "string", required: true}
+              - {label: "链接", name: "link", widget: "string", required: true}
+              - {label: "头像", name: "avatar", widget: "image", required: true}
+              - {label: "描述", name: "descr", widget: "text", required: true}
+              - {label: "是否显示", name: "show", widget: "boolean", default: true}
+
+  # 说说动态管理
+  - name: "talking"
+    label: "说说动态"
+    folder: "src/data"
+    extension: "json"
+    format: "json"
+    create: false
+    slug: "talking"
+    files:
+      - label: "说说动态"
+        name: "talking"
+        file: "src/data/talking.json"
+        fields:
+          - label: "动态列表"
+            name: "talking"
+            widget: "list"
+            fields:
+              - {label: "日期", name: "date", widget: "datetime", required: true}
+              - {label: "标签", name: "tags", widget: "list", required: false}
+              - {label: "内容", name: "content", widget: "markdown", required: true}
+              - {label: "图片", name: "images", widget: "list", field: {label: "图片", name: "image", widget: "image"}, required: false}
+              - {label: "是否显示", name: "show", widget: "boolean", default: true}
+
+  # 个人资料管理
+  - name: "profile"
+    label: "个人资料"
+    folder: "src/data"
+    extension: "json"
+    format: "json"
+    create: false
+    slug: "profile"
+    files:
+      - label: "个人资料"
+        name: "profile"
+        file: "src/data/profile.json"
+        fields:
+          - {label: "姓名", name: "name", widget: "string", required: true}
+          - {label: "头像", name: "avatar", widget: "image", required: true}
+          - {label: "简介", name: "bio", widget: "text", required: true}
+          - {label: "邮箱", name: "email", widget: "string", required: false}
+          - {label: "GitHub", name: "github", widget: "string", required: false}
+          - {label: "微博", name: "weibo", widget: "string", required: false}
+          - {label: "QQ", name: "qq", widget: "string", required: false}
+          - {label: "微信", name: "wechat", widget: "string", required: false}
+          - {label: "Bilibili", name: "bilibili", widget: "string", required: false}
+          - {label: "知乎", name: "zhihu", widget: "string", required: false}
+
+  # 网站配置
+  - name: "config"
+    label: "网站配置"
+    folder: "src/data"
+    extension: "json"
+    format: "json"
+    create: false
+    slug: "config"
+    files:
+      - label: "网站基本配置"
+        name: "site_config"
+        file: "src/data/config.json"
+        fields:
+          - {label: "网站标题", name: "title", widget: "string", required: true}
+          - {label: "网站描述", name: "description", widget: "text", required: true}
+          - {label: "关键词", name: "keywords", widget: "list", required: false}
+          - {label: "作者", name: "author", widget: "string", required: true}
+          - {label: "网站图标", name: "favicon", widget: "image", required: false}
+          - {label: "Logo", name: "logo", widget: "image", required: false}
+          - {label: "备案号", name: "icp", widget: "string", required: false}
+          - {label: "统计代码", name: "analytics", widget: "text", required: false, hint: "例如 Google Analytics 或百度统计代码"}
+          - {label: "版权信息", name: "copyright", widget: "string", required: false}
+          - {label: "评论系统", name: "comment_system", widget: "select", options: ["Waline", "Disqus", "Gitalk", "None"], default: "Waline"}
+          - {label: "Waline Server URL", name: "waline_server_url", widget: "string", required: false, hint: "仅当评论系统为 Waline 时有效"}
+          - {label: "文章每页数量", name: "posts_per_page", widget: "number", default: 10, value_type: "int"}
+          - {label: "友情链接页面路径", name: "friends_page_path", widget: "string", default: "/friends"}
+          - {label: "说说动态页面路径", name: "talking_page_path", widget: "string", default: "/talking"}
