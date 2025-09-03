@@ -1313,6 +1313,9 @@
         if (!cmsInitialized) {
           initializeDecapCMS();
         }
+        
+        // 重新检查系统状态，因为CMS可能已经初始化
+        setTimeout(() => checkSystemStatus(), 1000);
       }
 
       currentSection = section;
@@ -1331,6 +1334,9 @@
             cmsInitialized = true;
             console.log('Decap CMS initialized successfully');
             showMessage('CMS加载成功', 'success');
+            
+            // 更新CMS状态
+            updateStatus('cms-status', 'success');
             
             // 隐藏加载状态
             const cmsContainer = document.getElementById('cms-container');
@@ -1616,7 +1622,11 @@
         }
 
         // 检查CMS状态
-        updateStatus('cms-status', cmsInitialized ? 'success' : 'error');
+        if (currentSection === 'cms') {
+          updateStatus('cms-status', cmsInitialized ? 'success' : 'error');
+        } else {
+          updateStatus('cms-status', 'success'); // 如果不在CMS页面，显示正常
+        }
 
         // 检查身份验证
         updateStatus('auth-status', currentUser ? 'success' : 'error');
