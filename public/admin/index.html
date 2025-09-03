@@ -967,7 +967,59 @@
         <!-- CMS 容器 -->
         <div id="cms-container" style="display: none;">
           <div id="decap-cms"></div>
-      </div>
+        </div>
+        
+        <!-- 完整的CMS配置 -->
+        <script type="text/javascript">
+          // 完整的CMS配置
+          const cmsConfig = {
+            backend: {
+              name: 'git-gateway',
+              branch: 'main',
+              commit_messages: {
+                create: '创建{{collection}}："{{slug}}"',
+                update: '更新{{collection}}："{{slug}}"',
+                delete: '删除{{collection}}："{{slug}}"',
+                uploadMedia: '上传媒体：{{path}}',
+                deleteMedia: '删除媒体：{{path}}'
+              }
+            },
+            local_backend: true,
+            media_folder: 'public/assets/uploads',
+            public_folder: '/assets/uploads',
+            site_url: 'https://jade-t.netlify.app',
+            display_url: 'https://jade-t.netlify.app',
+            logo_url: '/assets/images/logo.png',
+            locale: 'zh_Hans',
+            publish_mode: 'editorial_workflow',
+            collections: [
+              {
+                name: 'blog',
+                label: '博客文章',
+                folder: 'src/content/blog',
+                create: true,
+                slug: '{{year}}-{{month}}-{{day}}-{{slug}}',
+                identifier_field: 'title',
+                summary: '{{title}} - {{date}}',
+                sortable_fields: ['date', 'title', 'updated'],
+                fields: [
+                  { label: '标题', name: 'title', widget: 'string', required: true },
+                  { label: '文章ID', name: 'id', widget: 'string', required: true },
+                  { label: '发布日期', name: 'date', widget: 'datetime', format: 'YYYY-MM-DD HH:mm:ss', required: true },
+                  { label: '更新时间', name: 'updated', widget: 'datetime', format: 'YYYY-MM-DD HH:mm:ss', required: false },
+                  { label: '分类', name: 'categories', widget: 'select', options: ['技术', '生活', '随笔', '教程', '分享'], required: true },
+                  { label: '标签', name: 'tags', widget: 'list', required: false },
+                  { label: '封面图片', name: 'cover', widget: 'image', required: false },
+                  { label: '是否推荐', name: 'recommend', widget: 'boolean', default: false },
+                  { label: '是否置顶', name: 'top', widget: 'boolean', default: false },
+                  { label: '是否隐藏', name: 'hide', widget: 'boolean', default: false },
+                  { label: '摘要', name: 'excerpt', widget: 'text', required: false },
+                  { label: '正文', name: 'body', widget: 'markdown', required: true }
+                ]
+              }
+            ]
+          };
+        </script>
       </div>
     </main>
   </div>
@@ -1311,7 +1363,12 @@
         
         // 初始化Decap CMS
         if (!cmsInitialized) {
-          initializeDecapCMS();
+          // 调用新的CMS初始化函数
+          if (typeof initDecapCMS === 'function') {
+            initDecapCMS();
+          } else {
+            initializeDecapCMS();
+          }
         }
         
         // 重新检查系统状态，因为CMS可能已经初始化
@@ -1338,11 +1395,14 @@
             // 更新CMS状态
             updateStatus('cms-status', 'success');
             
-            // 隐藏加载状态
+            // 隐藏加载状态并显示CMS界面
             const cmsContainer = document.getElementById('cms-container');
             if (cmsContainer) {
-              cmsContainer.innerHTML = '<div id="cms"></div>';
+              cmsContainer.innerHTML = '<div id="decap-cms"></div>';
             }
+            
+            // 设置CMS已初始化标志
+            cmsInitialized = true;
           } catch (error) {
             console.error('Failed to initialize Decap CMS:', error);
             showMessage('CMS初始化失败，请刷新页面重试', 'error');
@@ -1810,7 +1870,7 @@
   <!-- Netlify Identity Widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
-  <!-- Decap CMS - 本地模块 + 多CDN备用方案 -->
+  <!-- Decap CMS - 多CDN加载方案 -->
   <script>
     // 初始化Netlify Identity Widget
     if (window.netlifyIdentity) {
@@ -1824,124 +1884,123 @@
       window.netlifyIdentity.init();
     }
 
-    // 尝试从本地模块加载Decap CMS
-    function loadLocalDecapCMS() {
-      return new Promise((resolve, reject) => {
-        // 检查是否在开发环境下运行
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          try {
-            // 尝试动态导入本地模块
-            import('/node_modules/decap-cms/dist/decap-cms.js')
-              .then(module => {
-                console.log('Decap CMS loaded from local module');
-                resolve();
-              })
-              .catch(error => {
-                console.warn('Failed to load from local module:', error);
-          // 在开发环境下，如果没有Netlify Identity，尝试使用模拟令牌
-          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.warn('Running in development mode without authentication');
-            // 开发环境下模拟已登录状态
-            window.netlifyIdentity = window.netlifyIdentity || {};
-            window.netlifyIdentity.currentUser = () => ({
-              token: 'dev-token',
-              email: 'dev@example.com'
-            });
-            resolve();
-          } else {
-            reject();
-          }
-              });
-          } catch (error) {
-            console.warn('Error trying to load local module:', error);
-            reject();
-          }
-        } else {
-          // 生产环境直接尝试CDN
-          reject();
-        }
-      });
-    }
-
     // 尝试多个CDN源加载Decap CMS
     function loadDecapCMSFromCDN() {
-      const cdnSources = [
-        'https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js',
-        'https://cdn.jsdelivr.net/npm/decap-cms@^3.1.2/dist/decap-cms.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/decap-cms/3.1.2/decap-cms.js'
-      ];
-      
-      let currentIndex = 0;
-      
-      function tryLoadScript() {
-        if (currentIndex >= cdnSources.length) {
-          console.error('所有CDN源都加载失败');
-          // 显示加载错误信息
-          const cmsContainer = document.getElementById('decap-cms');
-          if (cmsContainer) {
-              cmsContainer.style.display = 'block';
-              cmsContainer.innerHTML = `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                      <div class="error-message">
-                          <i class="fas fa-exclamation-circle"></i>
-                          <span>无法加载CMS，请检查网络连接或稍后重试</span>
-                      </div>
-                      <div style="margin-top: 1rem; text-align: center;">
-                          <button class="btn btn-primary" onclick="retryCMS()" style="margin-right: 0.5rem;">
-                              <i class="fas fa-redo"></i> 重试
-                          </button>
-                          <button class="btn btn-secondary" onclick="window.location.reload()" style="margin-left: 0.5rem;">
-                              <i class="fas fa-sync-alt"></i> 刷新页面
-                          </button>
-                      </div>
-                  </div>
-              `;
+      return new Promise((resolve, reject) => {
+        const cdnSources = [
+          'https://unpkg.com/decap-cms@3.1.2/dist/decap-cms.js',
+          'https://cdn.jsdelivr.net/npm/decap-cms@3.1.2/dist/decap-cms.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/decap-cms/3.1.2/decap-cms.js',
+          'https://unpkg.com/decap-cms@3.0.0/dist/decap-cms.js',
+          'https://cdn.jsdelivr.net/npm/decap-cms@3.0.0/dist/decap-cms.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript() {
+          if (currentIndex >= cdnSources.length) {
+            console.error('所有CDN源都加载失败');
+            reject(new Error('所有CDN源都加载失败'));
+            return;
           }
-          return;
+          
+          const script = document.createElement('script');
+          script.src = cdnSources[currentIndex];
+          script.onload = function() {
+            console.log(`Decap CMS loaded from: ${cdnSources[currentIndex]}`);
+            resolve();
+          };
+          script.onerror = function() {
+            console.warn(`Failed to load from: ${cdnSources[currentIndex]}`);
+            currentIndex++;
+            tryLoadScript();
+          };
+          
+          document.head.appendChild(script);
         }
         
-        const script = document.createElement('script');
-        script.src = cdnSources[currentIndex];
-        script.onload = function() {
-          console.log(`Decap CMS loaded from: ${cdnSources[currentIndex]}`);
-          // 脚本加载成功，等待初始化
-        };
-        script.onerror = function() {
-          console.warn(`Failed to load from: ${cdnSources[currentIndex]}`);
-          currentIndex++;
-          tryLoadScript();
-        };
-        
-        document.head.appendChild(script);
-      }
-      
-      tryLoadScript();
+        tryLoadScript();
+      });
     }
     
     // 重试CMS加载
     function retryCMS() {
-      const cmsContainer = document.getElementById('decap-cms');
+      const cmsContainer = document.getElementById('cms-container');
       if (cmsContainer) {
-          cmsContainer.innerHTML = '<div class="loading-spinner"></div>';
+        cmsContainer.innerHTML = '<div class="loading-spinner"></div>';
       }
       initDecapCMS();
     }
 
-    // 优先尝试本地模块，失败则回退到CDN
+    // 初始化Decap CMS
     async function initDecapCMS() {
       try {
-        await loadLocalDecapCMS();
+        await loadDecapCMSFromCDN();
+        // 脚本加载成功后，等待DecapCMS对象可用
+        let retryCount = 0;
+        const maxRetries = 50; // 5秒超时
+        
+        const checkCMS = () => {
+          if (typeof DecapCMS !== 'undefined') {
+            try {
+              // 使用配置初始化CMS
+              DecapCMS.init({
+                config: cmsConfig
+              });
+              console.log('Decap CMS initialized successfully');
+              // 更新CMS状态
+              if (typeof updateStatus === 'function') {
+                updateStatus('cms-status', 'success');
+              }
+              // 设置CMS已初始化标志
+              cmsInitialized = true;
+              // 显示成功消息
+              showMessage('CMS加载成功！现在可以管理内容了', 'success');
+            } catch (error) {
+              console.error('Failed to initialize Decap CMS:', error);
+              throw error;
+            }
+          } else {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw new Error('CMS加载超时');
+            }
+            setTimeout(checkCMS, 100);
+          }
+        };
+        
+        checkCMS();
       } catch (error) {
-        loadDecapCMSFromCDN();
+        console.error('Failed to load Decap CMS:', error);
+        showCMSLoadingError(`
+          <h4>CMS加载失败</h4>
+          <p>错误信息: ${error.message}</p>
+          <p>可能的原因：</p>
+          <ul style="text-align: left; margin: 1rem 0;">
+            <li>网络连接问题</li>
+            <li>CDN访问受限</li>
+            <li>浏览器阻止了脚本加载</li>
+          </ul>
+          <p>解决方案：</p>
+          <ul style="text-align: left; margin: 1rem 0;">
+            <li>检查网络连接</li>
+            <li>刷新页面重试</li>
+            <li>使用不同的浏览器</li>
+            <li>稍后再次尝试</li>
+          </ul>
+        `);
       }
     }
 
-    // 页面加载完成后开始加载CMS
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDecapCMS);
-    } else {
-      initDecapCMS();
-    }
+    // 页面加载完成后自动初始化CMS
+    document.addEventListener('DOMContentLoaded', function() {
+      // 延迟初始化，确保其他组件已加载
+      setTimeout(() => {
+        if (typeof initDecapCMS === 'function') {
+          initDecapCMS();
+        }
+      }, 1000);
+    });
   </script>
 </body>
 </html>
